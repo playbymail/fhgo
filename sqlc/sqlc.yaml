@@ -1,0 +1,11 @@
+version: 2
+sql:
+  - engine: "sqlite"
+    schema:
+      - "sqlite3/schema.sql"
+    queries:
+      - "sqlite3/server.sql"
+    gen:
+      go:
+        package: "sqlite3"
+        out: "sqlite3"

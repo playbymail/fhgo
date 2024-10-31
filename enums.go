@@ -2,28 +2,6 @@
 
 package fhgo
 
-// Types of combatants
-type combatant_type_e int
-
-const (
-	NONCOMBATANT combatant_type_e = iota
-	SHIP
-	NAMPLA
-	GENOCIDE_NAMPLA
-	BESIEGED_NAMPLA
-)
-
-// Types of special targets
-type special_target_e int
-
-const (
-	TARGET_NORMAL special_target_e = iota
-	TARGET_WARSHIPS
-	TARGET_TRANSPORTS
-	TARGET_STARBASES
-	TARGET_PDS
-)
-
 // Types of actions
 type combat_action_e int
 
@@ -41,6 +19,17 @@ const (
 // Special types
 
 const NON_COMBATANT = 1
+
+// Types of combatants
+type combatant_type_e int
+
+const (
+	NONCOMBATANT combatant_type_e = iota
+	SHIP
+	NAMPLA
+	GENOCIDE_NAMPLA
+	BESIEGED_NAMPLA
+)
 
 // Command codes
 type command_code_e int
@@ -104,16 +93,24 @@ const (
 
 const NUM_COMMANDS = ZZZ + 1
 
-// Constants needed for parsing
-type parser_token_e int
+// Gases in planetary atmospheres
+type gas_e int
 
 const (
-	UNKNOWN parser_token_e = iota
-	TECH_ID
-	ITEM_CLASS
-	SHIP_CLASS
-	PLANET_ID
-	SPECIES_ID
+	GAS_NONE gas_e = iota
+	H2             /* Hydrogen */
+	CH4            /* Methane */
+	HE             /* Helium */
+	NH3            /* Ammonia */
+	N2             /* Nitrogen */
+	CO2            /* Carbon Dioxide */
+	O2             /* Oxygen */
+	HCL            /* Hydrogen Chloride */
+	CL2            /* Chlorine */
+	F2             /* Fluorine */
+	H2O            /* Steam */
+	SO2            /* Sulfur Dioxide */
+	H2S            /* Hydrogen Sulfide */
 )
 
 // Item IDs
@@ -160,6 +157,28 @@ const (
 	X5                /* Unassigned. */
 )
 
+// Interspecies transactions
+type interspecies_transaction_e int
+
+const (
+	INTERSPECIES_TRANSACTION_TYPE_UNKNOWN interspecies_transaction_e = iota
+	EU_TRANSFER
+	MESSAGE_TO_SPECIES
+	BESIEGE_PLANET
+	SIEGE_EU_TRANSFER
+	TECH_TRANSFER
+	DETECTION_DURING_SIEGE
+	SHIP_MISHAP
+	ASSIMILATION
+	INTERSPECIES_CONSTRUCTION
+	TELESCOPE_DETECTION
+	ALIEN_JUMP_PORTAL_USAGE
+	KNOWLEDGE_TRANSFER
+	LANDING_REQUEST
+	LOOTING_EU_TRANSFER
+	ALLIES_ORDER
+)
+
 // Status codes for named planets. These are logically ORed together.
 
 const HOME_PLANET = 1 << 0
@@ -169,24 +188,37 @@ const MINING_COLONY = 1 << 4
 const RESORT_COLONY = 1 << 5
 const DISBANDED_COLONY = 1 << 6
 
-// Gases in planetary atmospheres
-type gas_e int
+// Constants needed for parsing
+type parser_token_e int
 
 const (
-	GAS_NONE gas_e = iota
-	H2             /* Hydrogen */
-	CH4            /* Methane */
-	HE             /* Helium */
-	NH3            /* Ammonia */
-	N2             /* Nitrogen */
-	CO2            /* Carbon Dioxide */
-	O2             /* Oxygen */
-	HCL            /* Hydrogen Chloride */
-	CL2            /* Chlorine */
-	F2             /* Fluorine */
-	H2O            /* Steam */
-	SO2            /* Sulfur Dioxide */
-	H2S            /* Hydrogen Sulfide */
+	UNKNOWN parser_token_e = iota
+	TECH_ID
+	ITEM_CLASS
+	SHIP_CLASS
+	PLANET_ID
+	SPECIES_ID
+)
+
+// planet_status_e might actually be planet_special_e
+type planet_status_e int
+
+type planet_special_e int
+
+const (
+	NOT_SPECIAL planet_special_e = iota
+	IDEAL_HOME_PLANET
+	IDEAL_COLONY_PLANET
+	RADIOACTIVE_HELLHOLE
+)
+
+// Ship types
+type ship_e int
+
+const (
+	FTL ship_e = iota
+	SUB_LIGHT
+	STARBASE
 )
 
 // Ship classes
@@ -214,15 +246,6 @@ const (
 )
 const NUM_SHIP_CLASSES = TR + 1
 
-// Ship types
-type ship_e int
-
-const (
-	FTL ship_e = iota
-	SUB_LIGHT
-	STARBASE
-)
-
 // Ship status codes
 type ship_status_e int
 
@@ -235,6 +258,47 @@ const (
 	FORCED_JUMP
 )
 
+// Types of special targets
+type special_target_e int
+
+const (
+	TARGET_NORMAL special_target_e = iota
+	TARGET_WARSHIPS
+	TARGET_TRANSPORTS
+	TARGET_STARBASES
+	TARGET_PDS
+)
+
+// * Star Colors
+type star_color_e int
+
+const (
+	UNKNOWN_STAR_COLOR star_color_e = iota
+	BLUE
+	BLUE_WHITE
+	WHITE
+	YELLOW_WHITE
+	YELLOW
+	ORANGE
+	RED
+)
+
+// Star types
+type star_type_e byte
+
+const (
+	// UNKNOWN_STAR_TYPE TODO: both "unknown" and "main" were ' ' in the original game engine!
+	UNKNOWN_STAR_TYPE star_type_e = star_type_e('?')
+	// DWARF refers to dwarf stars, which are smaller, cooler stars, typically red dwarfs, known for long, stable lifespans.
+	DWARF = star_type_e('d')
+	// DEGENERATE points to a "degenerate" star, often meaning a white dwarf, neutron star, or possibly even a black hole. These are remnants of stars that have expended their nuclear fuel and undergone gravitational collapse.
+	DEGENERATE = star_type_e('D')
+	// MAIN_SEQUENCE indicates a main sequence star, which is a star in the prime of its life, burning hydrogen in its core. Main sequence stars are the most common type, including stars like our Sun.
+	MAIN_SEQUENCE = star_type_e(' ')
+	// GIANT refers to giant stars, which are significantly larger and more luminous than main sequence stars. Giants often have expanded outer layers and are in later stages of stellar evolution, like red giants.
+	GIANT = star_type_e('g')
+)
+
 // Tech level ids
 type tech_level_e int
 
@@ -245,63 +309,4 @@ const (
 	GV                     /* Gravitics tech level. */
 	LS                     /* Life Support tech level. */
 	BI                     /* Biology tech level. */
-)
-
-// Star types
-type star_e int
-
-const (
-	STAR_TYPE_UNKNOWN star_e = iota
-	DWARF
-	DEGENERATE
-	MAIN_SEQUENCE
-	GIANT
-)
-
-// * Star Colors
-type star_color_e int
-
-const (
-	STAR_COLOR_UNKNOWN star_color_e = iota
-	BLUE
-	BLUE_WHITE
-	WHITE
-	YELLOW_WHITE
-	YELLOW
-	ORANGE
-	RED
-)
-
-// Interspecies transactions
-type interspecies_transaction_e int
-
-const (
-	INTERSPECIES_TRANSACTION_TYPE_UNKNOWN interspecies_transaction_e = iota
-	EU_TRANSFER
-	MESSAGE_TO_SPECIES
-	BESIEGE_PLANET
-	SIEGE_EU_TRANSFER
-	TECH_TRANSFER
-	DETECTION_DURING_SIEGE
-	SHIP_MISHAP
-	ASSIMILATION
-	INTERSPECIES_CONSTRUCTION
-	TELESCOPE_DETECTION
-	ALIEN_JUMP_PORTAL_USAGE
-	KNOWLEDGE_TRANSFER
-	LANDING_REQUEST
-	LOOTING_EU_TRANSFER
-	ALLIES_ORDER
-)
-
-// planet_status_e might actually be planet_special_e
-type planet_status_e int
-
-type planet_special_e int
-
-const (
-	NOT_SPECIAL planet_special_e = iota
-	IDEAL_HOME_PLANET
-	IDEAL_COLONY_PLANET
-	RADIOACTIVE_HELLHOLE
 )

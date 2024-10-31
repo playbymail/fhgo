@@ -6,9 +6,9 @@
 - [X] Create initial package organization
 
 ## 2. Core Data Structures
-- [ ] Convert star_data_t to Go
-- [ ] Convert game state structures
-- [ ] Add strong typing for numeric fields (int16, int32, etc)
+- [X] Convert star_data_t to Go
+- [X] Convert game state structures
+- [X] Add strong typing for numeric fields (int16, int32, etc)
 - [ ] Define interfaces for key components
 
 ## 3. Utility Functions
@@ -16,14 +16,13 @@
 - [ ] Port scan() function
 - [ ] Create helper functions for common operations
 
-## 4. JSON Implementation
-- [ ] Design JSON schema for game state
-- [ ] Implement struct tags for JSON marshaling
+## 4. Sqlite3 Implementation
+- [ ] Design schema for game state
+- [ ] Implement queries for data marsalling and unmarshalling
 - [ ] Create serialization functions for game objects
 - [ ] Implement deserialization functions
-- [ ] Add validation for JSON input/output
-- [ ] Create JSON compatibility layer for existing save files
-- [ ] Add JSON pretty printing for human-readable output
+- [ ] Add validation for SQL input/output
+- [ ] Add reports with pretty printing for human-readable output
 
 ## 5. Game Engine Core
 - [ ] Port main game loop

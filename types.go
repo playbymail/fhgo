@@ -2,35 +2,24 @@
 
 package fhgo
 
-type species_cfg_t struct {
-	email        string
-	govtname     string
-	govttype     string
-	homeworld    string
-	name         string
-	ml           int
-	gv           int
-	ls           int
-	bi           int
-	experimental struct {
-		econ_units   int
-		make_bridges int
-		ma_base      int
-		mi_base      int
-		ship_yards   int
-		tech_bi      int
-		tech_gv      int
-		tech_ls      int
-		tech_ma      int
-		tech_mi      int
-		tech_ml      int
-	}
+type action_data_t struct {
+	num_units_fighting     int
+	fighting_species_index [MAX_SHIPS]species_id_t
+	num_shots              [MAX_SHIPS]int
+	shots_left             [MAX_SHIPS]int
+	weapon_damage          [MAX_SHIPS]int64
+	shield_strength        [MAX_SHIPS]int64
+	shield_strength_left   [MAX_SHIPS]int64
+	original_age_or_PDs    [MAX_SHIPS]int64
+	bomb_damage            [MAX_SHIPS]int64
+	surprised              [MAX_SHIPS]byte
+	unit_type              [MAX_SHIPS]byte
+	fighting_unit          [MAX_SHIPS]string
 }
-
-type species_id_t int
+type action_data = action_data_t
 
 type battle_data_t struct {
-	x, y, z                   int
+	x, y, z, pn               int
 	num_species_here          byte
 	spec_num                  [MAX_SPECIES]species_id_t
 	summary_only              [MAX_SPECIES]species_id_t
@@ -51,73 +40,15 @@ type battle_data_t struct {
 }
 type battle_data = battle_data_t
 
-type action_data_t struct {
-	num_units_fighting     int
-	fighting_species_index [MAX_SHIPS]species_id_t
-	num_shots              [MAX_SHIPS]int
-	shots_left             [MAX_SHIPS]int
-	weapon_damage          [MAX_SHIPS]int64
-	shield_strength        [MAX_SHIPS]int64
-	shield_strength_left   [MAX_SHIPS]int64
-	original_age_or_PDs    [MAX_SHIPS]int64
-	bomb_damage            [MAX_SHIPS]int64
-	surprised              [MAX_SHIPS]byte
-	unit_type              [MAX_SHIPS]byte
-	fighting_unit          [MAX_SHIPS]string
-}
-type action_data = action_data_t
+type double = float64
+type long = int
 
-type galaxy_data_t struct {
-	d_num_species int // Design number of species in galaxy
-	num_species   int // Actual number of species allocated
-	radius        int // Galactic radius in parsecs
-	turn_number   int // Current turn number
+type intercept_t struct {
+	x, y, z      int
+	amount_spent int
 }
 
-type star_id_t int
-
-type star_data_t struct {
-	id           star_id_t    // unique identifier for this system
-	index        int          // index of this system in star_base array
-	x, y, z      int          // Coordinates
-	type_        int          // Dwarf, degenerate, main sequence or giant
-	color        star_color_e // Star color. Blue, blue-white, etc
-	size         int          // Star size, from 0 through 9 inclusive
-	num_planets  int          // Number of usable planets in star system
-	home_system  bool         // TRUE if this is a good potential home system
-	worm_here    bool         // TRUE if wormhole entry/exit
-	worm_x       int          // Coordinates of wormhole's exit
-	worm_y       int
-	worm_z       int
-	wormholeExit *star_data_t
-	planet_index int                   // Index (starting at zero) into the file "planets.dat" of the first planet in the star system
-	message      int                   // Message associated with this star system, if any
-	visited_by   map[species_id_t]bool // A bit is set if corresponding species has been here
-	planets      [10]*planet_data_t    // planets in this star system
-}
-
-type planet_id_t int
-
-type planet_data_t struct {
-	id                planet_id_t  // unique identifier for this planet
-	index             int          // index of this planet into the planet_base array
-	temperature_class int          // Temperature class, 1-30
-	pressure_class    int          // Pressure class, 0-29
-	special           int          // 0 = not special, 1 = ideal home planet, 2 = ideal colony planet, 3 = radioactive hellhole
-	gas               [4]gas_e     // Gas in atmosphere. Zero if none
-	gas_percent       [4]int       // Percentage of gas in atmosphere
-	diameter          int          // Diameter in thousands of kilometers
-	gravity           int          // Surface gravity. Multiple of Earth gravity times 100
-	mining_difficulty int          // Mining difficulty times 100
-	econ_efficiency   int          // Economic efficiency. Always 100 for a home planet
-	md_increase       int          // Increase in mining difficulty
-	message           int          // Message associated with this planet, if any
-	isValid           bool         // FALSE if the record is invalid
-	star              *star_data_t // pointer to the star the planet is orbiting
-	orbit             int          // orbit of planet in the system
-}
-
-type nampla_id_t int
+type message_id_t int
 
 type nampla_data_t struct {
 	id             nampla_id_t     // unique identifier for this named planet
@@ -146,11 +77,32 @@ type nampla_data_t struct {
 	planet         *planet_data_t  // pointer to planet the colony is on
 }
 
-type message_id_t int
+type nampla_id_t int
 
-type ship_id_t int
+type planet_data_t struct {
+	id                planet_id_t  // unique identifier for this planet
+	index             int          // index of this planet into the planet_base array
+	temperature_class int          // Temperature class, 1-30
+	pressure_class    int          // Pressure class, 0-29
+	special           int          // 0 = not special, 1 = ideal home planet, 2 = ideal colony planet, 3 = radioactive hellhole
+	gas               [4]gas_e     // Gas in atmosphere. Zero if none
+	gas_percent       [4]int       // Percentage of gas in atmosphere
+	diameter          int          // Diameter in thousands of kilometers
+	gravity           int          // Surface gravity. Multiple of Earth gravity times 100
+	mining_difficulty int          // Mining difficulty times 100
+	econ_efficiency   int          // Economic efficiency. Always 100 for a home planet
+	md_increase       int          // Increase in mining difficulty
+	message           int          // Message associated with this planet, if any
+	isValid           bool         // FALSE if the record is invalid
+	star              *star_data_t // pointer to the star the planet is orbiting
+	orbit             int          // orbit of planet in the system
+}
+type planet_id_t int
 
-type ship_type_e int
+type scan_system_t struct {
+	star     *star_data_t
+	distance float64
+}
 
 type ship_data_t struct {
 	id                     ship_id_t      // unique identifier for this ship
@@ -169,6 +121,40 @@ type ship_data_t struct {
 	loading_point          nampla_id_t    // Nampla index for planet where ship was last loaded with CUs. Zero = none. Use 9999 for home planet
 	unloading_point        nampla_id_t    // Nampla index for planet that ship should be given orders to jump to where it will unload. Zero = none. Use 9999 for home planet
 	special                int            // Different for each application
+}
+
+type ship_id_t int
+
+type ship_type_e int
+
+type sp_loc_data_t struct {
+	s       species_id_t /* Species number */
+	x, y, z int
+}
+
+type species_cfg_t struct {
+	email        string
+	govtname     string
+	govttype     string
+	homeworld    string
+	name         string
+	ml           int
+	gv           int
+	ls           int
+	bi           int
+	experimental struct {
+		econ_units   int
+		make_bridges int
+		ma_base      int
+		mi_base      int
+		ship_yards   int
+		tech_bi      int
+		tech_gv      int
+		tech_ls      int
+		tech_ma      int
+		tech_mi      int
+		tech_ml      int
+	}
 }
 
 type species_data_t struct {
@@ -204,15 +190,29 @@ type species_data_t struct {
 	}
 }
 
-type intercept_t struct {
-	x, y, z      int
-	amount_spent int
+type species_id_t int
+
+type star_data_t struct {
+	id           star_id_t    // unique identifier for this system
+	index        int          // index of this system in star_base array
+	x, y, z      int          // Coordinates
+	type_        star_type_e  // Dwarf, degenerate, main sequence or giant
+	color        star_color_e // Star color. Blue, blue-white, etc
+	size         int          // Star size, from 0 through 9 inclusive
+	num_planets  int          // Number of usable planets in star system
+	home_system  bool         // TRUE if this is a good potential home system
+	worm_here    bool         // TRUE if wormhole entry/exit
+	worm_x       int          // Coordinates of wormhole's exit
+	worm_y       int
+	worm_z       int
+	wormholeExit *star_data_t
+	planet_index int                   // Index (starting at zero) into the file "planets.dat" of the first planet in the star system
+	message      int                   // Message associated with this star system, if any
+	visited_by   map[species_id_t]bool // A bit is set if corresponding species has been here
+	planets      [10]*planet_data_t    // planets in this star system
 }
 
-type sp_loc_data_t struct {
-	s       species_id_t /* Species number */
-	x, y, z int
-}
+type star_id_t int
 
 type trans_data_t struct {
 	type_       interspecies_transaction_e // Transaction type
@@ -226,4 +226,13 @@ type trans_data_t struct {
 	name2       string
 	number3     int
 	name3       string
+}
+
+type wormhole_data_t struct {
+	from_star_x int
+	from_star_y int
+	from_star_z int
+	to_star_x   int
+	to_star_y   int
+	to_star_z   int
 }
