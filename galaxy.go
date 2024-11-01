@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"sort"
 	"time"
 )
 
@@ -59,21 +60,16 @@ func CreateGalaxy(path string, galacticRadius, desiredNumStars, desiredNumSpecie
 		log.Fatalf("error: galactic radius is too large for %d stars\n", desiredNumStars)
 	}
 
-	type coord_t struct {
-		x int
-		y int
-		z int
-	}
-
 	started := time.Now()
 
 	// initialize star location data
-	var starCoords []coord_t
+	var starList []coord_t
 	var star_here [MAX_DIAMETER][MAX_DIAMETER]bool
+	origin := coord_t{x: 0, y: 0, z: 0}
 
 	// randomly assign stars to locations within the galactic cluster.
-	galacticRadiusSquared := galacticRadius * galacticRadius
-	for len(starCoords) < desiredNumStars {
+	maxDistance := float64(galacticRadius)
+	for len(starList) < desiredNumStars {
 		// randomly place a star
 		coords := coord_t{
 			x: rnd(galactic_diameter) - 1 - galacticRadius,
@@ -89,22 +85,103 @@ func CreateGalaxy(path string, galacticRadius, desiredNumStars, desiredNumSpecie
 
 		// check that the coordinate is within the galactic boundary.
 		// if it isn't, loop back to the top of the loop and try again.
-		sq_distance_from_center := (coords.x * coords.x) + (coords.y * coords.y) + (coords.z * coords.z)
-		if sq_distance_from_center >= galacticRadiusSquared {
+		if origin.DistanceTo(coords) > maxDistance {
 			continue
 		}
 		// otherwise, add the star to the list of stars.
-		starCoords = append(starCoords, coords)
+		starList = append(starList, coords)
 		// and mark the location as having a star.
 		star_here[coords.x+galacticRadius][coords.y+galacticRadius] = true
 	}
-	fmt.Printf("       number of stars    == %6d in %v\n", len(starCoords), time.Since(started))
+	fmt.Printf("       number of stars    == %6d in %v\n", len(starList), time.Since(started))
+
+	sort.Slice(starList, func(i, j int) bool {
+		return starList[i].Less(starList[j])
+	})
 
 	g := &galaxy_data_t{
 		d_num_species: desiredNumSpecies,
 		num_species:   desiredNumSpecies,
 		radius:        galacticRadius,
 		turn_number:   0,
+	}
+
+	for n, coords := range starList {
+		fmt.Printf("star %6d: %s %12.4f\n", n+1, coords.String(), origin.DistanceTo(coords))
+		star := &star_data_t{
+			x: coords.x,
+			y: coords.y,
+			z: coords.z,
+		}
+
+		// Determine type of star. Make MAIN_SEQUENCE the most common star type.
+		// Type of star determines number of dice rolled when generating planets.
+		var numberOfDice int
+		switch rnd(10) {
+		case 1:
+			star.type_ = DWARF
+			numberOfDice = 1
+		case 2:
+			star.type_ = DEGENERATE
+			numberOfDice = 2
+		case 3:
+			star.type_ = GIANT
+			numberOfDice = 3
+		default:
+			star.type_ = MAIN_SEQUENCE
+			numberOfDice = 2
+		}
+
+		// Color of star is totally random and influences the number of dice rolled when generating planets.
+		// Big stars (blue, blue-white) roll bigger dice. Smaller stars (orange, red) roll smaller dice.
+		var planetDiceSize int
+		switch rnd(7) {
+		case 1:
+			star.color = BLUE
+			planetDiceSize = 7 + 2 - 1 // RED + 2 - star.color
+		case 2:
+			star.color = BLUE_WHITE
+			planetDiceSize = 7 + 2 - 2 // RED + 2 - star.color
+		case 3:
+			star.color = WHITE
+			planetDiceSize = 7 + 2 - 3 // RED + 2 - star.color
+		case 4:
+			star.color = YELLOW_WHITE
+			planetDiceSize = 7 + 2 - 4 // RED + 2 - star.color
+		case 5:
+			star.color = YELLOW
+			planetDiceSize = 7 + 2 - 5 // RED + 2 - star.color
+		case 6:
+			star.color = ORANGE
+			planetDiceSize = 7 + 2 - 6 // RED + 2 - star.color
+		case 7:
+			star.color = RED
+			planetDiceSize = 7 + 2 - 7 // RED + 2 - star.color
+		default:
+			panic("galaxy.go: unknown star color")
+		}
+
+		/* Size of star is totally random. */
+		star.size = rnd(10) - 1
+
+		/* Determine the number of planets in orbit around the star.
+		 * The algorithm is something I tweaked until I liked it.
+		 * It's weird, but it works. */
+		// start at negative 2 and add the rolls
+		star.num_planets = -2
+		for i := 1; i <= numberOfDice; i++ {
+			star.num_planets += rnd(planetDiceSize)
+		}
+		// trim down if too many
+		for star.num_planets > 9 {
+			star.num_planets -= rnd(3)
+		}
+		if star.num_planets < 1 {
+			star.num_planets = 1
+		}
+		fmt.Printf("star %6d: %s %12.4f planets %2d\n", n+1, coords.String(), origin.DistanceTo(coords), star.num_planets)
+
+		_ = star
 	}
 
 	return g
