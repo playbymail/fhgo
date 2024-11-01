@@ -79,26 +79,6 @@ type nampla_data_t struct {
 
 type nampla_id_t int
 
-type planet_data_t struct {
-	id                planet_id_t  // unique identifier for this planet
-	index             int          // index of this planet into the planet_base array
-	temperature_class int          // Temperature class, 1-30
-	pressure_class    int          // Pressure class, 0-29
-	special           int          // 0 = not special, 1 = ideal home planet, 2 = ideal colony planet, 3 = radioactive hellhole
-	gas               [4]gas_e     // Gas in atmosphere. Zero if none
-	gas_percent       [4]int       // Percentage of gas in atmosphere
-	diameter          int          // Diameter in thousands of kilometers
-	gravity           int          // Surface gravity. Multiple of Earth gravity times 100
-	mining_difficulty int          // Mining difficulty times 100
-	econ_efficiency   int          // Economic efficiency. Always 100 for a home planet
-	md_increase       int          // Increase in mining difficulty
-	message           int          // Message associated with this planet, if any
-	isValid           bool         // FALSE if the record is invalid
-	star              *star_data_t // pointer to the star the planet is orbiting
-	orbit             int          // orbit of planet in the system
-}
-type planet_id_t int
-
 type scan_system_t struct {
 	star     *star_data_t
 	distance float64

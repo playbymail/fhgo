@@ -172,14 +172,16 @@ func CreateGalaxy(path string, galacticRadius, desiredNumStars, desiredNumSpecie
 		for i := 1; i <= numberOfDice; i++ {
 			star.num_planets += rnd(planetDiceSize)
 		}
-		// trim down if too many
-		for star.num_planets > 9 {
-			star.num_planets -= rnd(3)
-		}
-		if star.num_planets < 1 {
+		if star.num_planets < 1 { // make sure we have at least one planet
 			star.num_planets = 1
+		} else { // trim down if too many
+			for star.num_planets > 9 {
+				star.num_planets -= rnd(3)
+			}
 		}
 		fmt.Printf("star %6d: %s %12.4f planets %2d\n", n+1, coords.String(), origin.DistanceTo(coords), star.num_planets)
+
+		star.planets, potential_home_system = generate_planets(star, star.num_planets, false, false)
 
 		_ = star
 	}

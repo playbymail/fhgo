@@ -113,6 +113,10 @@ const (
 	H2S            /* Hydrogen Sulfide */
 )
 
+var all_gases = []gas_e{
+	GAS_NONE, H2, CH4, HE, NH3, N2, CO2, O2, HCL, CL2, F2, H2O, SO2, H2S,
+}
+
 // Item IDs
 type item_e int
 
